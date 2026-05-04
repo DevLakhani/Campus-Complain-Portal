@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.chart.PieChart?>
+
+<StackPane xmlns="http://javafx.com/javafx/17"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.campus.complaint.controller.MainController"
+           styleClass="root-pane">
+
+    <BorderPane>
+
+    <!-- ════════════ TOP HEADER ════════════ -->
+    <top>
+        <VBox styleClass="header-box" spacing="4">
+            <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <Label text="🏫" styleClass="logo-icon"/>
+                <VBox>
+                    <Label text="Campus Complaint Portal" styleClass="header-title"/>
+                    <Label text="SDG 16 · Peace, Justice and Strong Institutions" styleClass="header-subtitle"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblThreadStatus" text="⚙ Thread Idle" styleClass="thread-badge"/>
+            </HBox>
+            <!-- Stats Row -->
+            <HBox styleClass="stats-row" spacing="10" alignment="CENTER_LEFT">
+                <Label text="Total:" styleClass="stat-label"/>
+                <Label fx:id="lblStatTotal" text="0" styleClass="stat-value stat-total"/>
+                <Separator orientation="VERTICAL"/>
+                <Label text="Submitted:" styleClass="stat-label"/>
+                <Label fx:id="lblStatSubmitted" text="0" styleClass="stat-value stat-submitted"/>
+                <Separator orientation="VERTICAL"/>
+                <Label text="Under Review:" styleClass="stat-label"/>
+                <Label fx:id="lblStatReview" text="0" styleClass="stat-value stat-review"/>
+                <Separator orientation="VERTICAL"/>
+                <Label text="In Progress:" styleClass="stat-label"/>
+                <Label fx:id="lblStatProgress" text="0" styleClass="stat-value stat-progress"/>
+                <Separator orientation="VERTICAL"/>
+                <Label text="Resolved:" styleClass="stat-label"/>
+                <Label fx:id="lblStatResolved" text="0" styleClass="stat-value stat-resolved"/>
+                <Separator orientation="VERTICAL"/>
+                <Button text="📊 Analysis" onAction="#handleShowAnalysis" styleClass="btn-secondary" style="-fx-padding: 4 10; -fx-font-size: 11px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ════════════ CENTER SPLIT ════════════ -->
+    <center>
+        <SplitPane dividerPositions="0.32" orientation="HORIZONTAL" styleClass="main-split">
+
+            <!-- ── LEFT: Complaint Form ── -->
+            <ScrollPane fitToWidth="true" styleClass="form-scroll" hbarPolicy="NEVER">
+                <VBox styleClass="form-panel" spacing="12">
+                    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+                    <Label text="📋  Submit a Complaint" styleClass="panel-title"/>
+                    <Separator/>
+
+                    <Label text="Student Full Name *" styleClass="field-label"/>
+                    <TextField fx:id="txtStudentName" promptText="e.g. John Snow" styleClass="field-input"/>
+
+                    <Label text="Student ID *" styleClass="field-label"/>
+                    <TextField fx:id="txtStudentId" promptText="e.g. CS-2021-001" styleClass="field-input"/>
+
+                    <Label text="Category *" styleClass="field-label"/>
+                    <ComboBox fx:id="cmbCategory" promptText="Select category…"
+                              maxWidth="Infinity" styleClass="field-combo"/>
+
+                    <Label text="Priority *" styleClass="field-label"/>
+                    <ComboBox fx:id="cmbPriority" maxWidth="Infinity" styleClass="field-combo"/>
+
+                    <TextArea fx:id="txtDescription" promptText="Describe your complaint in detail…"
+                              prefRowCount="5" wrapText="true" styleClass="field-textarea"/>
+
+                    <Label text="Attachment (Photo/Video - Optional)" styleClass="field-label"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Button fx:id="btnSelectMedia" text="📁 Select File" onAction="#handleSelectMedia" styleClass="btn-secondary"/>
+                        <Label fx:id="lblMediaPath" text="No file selected" styleClass="field-label" style="-fx-font-style: italic; -fx-font-size: 11px;"/>
+                    </HBox>
+
+                    <Label fx:id="lblFormError" text="" styleClass="error-label" wrapText="true"/>
+
+                    <HBox spacing="10">
+                        <Button fx:id="btnSubmit" text="✔  Submit Complaint"
+                                onAction="#handleSubmit" styleClass="btn-primary"
+                                maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnClear" text="✖  Clear"
+                                onAction="#handleClear" styleClass="btn-secondary"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+
+            <!-- ── RIGHT: Table Panel ── -->
+
+                <!-- Table -->
+                <VBox styleClass="table-panel" spacing="6">
+                    <padding><Insets top="12" right="12" bottom="6" left="12"/></padding>
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Label text="📊  All Complaints" styleClass="panel-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Sort By:" styleClass="field-label" style="-fx-padding: 0;"/>
+                        <ComboBox fx:id="cmbSort" promptText="Select Sort" styleClass="field-combo" prefWidth="130" style="-fx-padding: 2 6; -fx-font-size: 11px;"/>
+                        <Button fx:id="btnSortToggle" text="▼ Desc" onAction="#handleSortToggle" styleClass="btn-secondary" style="-fx-padding: 4 8; -fx-font-size: 11px;"/>
+                        <Button text="📥 Download Report" onAction="#handleDownloadReport" styleClass="btn-accent" style="-fx-padding: 4 8; -fx-font-size: 11px;"/>
+                    </HBox>
+                    <Separator/>
+                    <TableView fx:id="tblComplaints" VBox.vgrow="ALWAYS" styleClass="complaints-table">
+                        <columns>
+                            <TableColumn fx:id="colId"        text="ID"           prefWidth="120"/>
+                            <TableColumn fx:id="colName"      text="Student"      prefWidth="140"/>
+                            <TableColumn fx:id="colCategory"  text="Category"     prefWidth="130"/>
+                            <TableColumn fx:id="colPriority"  text="Priority"     prefWidth="85"/>
+                            <TableColumn fx:id="colStatus"    text="Status"       prefWidth="110"/>
+                            <TableColumn fx:id="colSubmitted" text="Submitted"    prefWidth="145"/>
+                            <TableColumn fx:id="colUpdated"   text="Last Updated" prefWidth="145"/>
+                            <TableColumn fx:id="colMedia"     text="Media"        prefWidth="80"/>
+                            <TableColumn fx:id="colDelete"    text="Action"       prefWidth="70"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </SplitPane>
+        </center>
+
+        <!-- ════════════ BOTTOM FOOTER ════════════ -->
+        <bottom>
+            <HBox styleClass="footer-bar" alignment="CENTER" spacing="20">
+                <padding><Insets top="8" bottom="8"/></padding>
+                <Label text="Campus Complaint Portal  ·  SDG 16  ·  OOP Project  ·  JavaFX"
+                       styleClass="footer-label"/>
+            </HBox>
+        </bottom>
+
+    </BorderPane>
+
+    <!-- ════════════ OVERLAY (POPUP) ════════════ -->
+    <StackPane fx:id="overlayPane" visible="false" onMouseClicked="#handleOverlayClick" style="-fx-background-color: rgba(0,0,0,0.5);">
+        <padding><Insets top="40" right="60" bottom="40" left="60"/></padding>
+        
+        <VBox styleClass="detail-panel" spacing="0" maxWidth="850" maxHeight="700" 
+              style="-fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 10);">
+            
+            <!-- Popup Header with Close Button -->
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f8fafc; -fx-background-radius: 12 12 0 0; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-border-width: 0 0 1 0;">
+                <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+                <Label text="🔍  Complaint Status Details" styleClass="panel-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="📥 Download PDF" onAction="#handleDownloadComplaintPDF" 
+                        style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12; -fx-background-radius: 4;"/>
+                <Button text="✖" onAction="#handleCloseDetail" 
+                        style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 18px; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 0 5;"/>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" styleClass="detail-scroll" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+                <VBox spacing="16">
+                    <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+                    
+                    <GridPane hgap="20" vgap="12" styleClass="detail-grid">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="120" prefWidth="130"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                            <ColumnConstraints minWidth="120" prefWidth="130"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <Label text="Complaint ID:" styleClass="detail-key" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblDetailId" text="—" styleClass="detail-val" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Label text="Student:" styleClass="detail-key" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                        <Label fx:id="lblDetailStudent" text="—" styleClass="detail-val" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                        <Label text="Category:" styleClass="detail-key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblDetailCategory" text="—" styleClass="detail-val" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="Priority:" styleClass="detail-key" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                        <Label fx:id="lblDetailPriority" text="—" styleClass="detail-val" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+
+                        <Label text="Status:" styleClass="detail-key" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblDetailStatus" text="—" styleClass="detail-val" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="Submitted:" styleClass="detail-key" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                        <Label fx:id="lblDetailSubmitted" text="—" styleClass="detail-val" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+
+                        <Label text="Last Updated:" styleClass="detail-key" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblDetailUpdated" text="—" styleClass="detail-val" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <Separator/>
+
+                    <VBox spacing="8">
+                        <Label text="Complaint Description" styleClass="field-label"/>
+                        <TextArea fx:id="txtDetailDescription" editable="false" prefRowCount="3"
+                                  wrapText="true" styleClass="detail-textarea"/>
+                    </VBox>
+
+
+                    <Separator/>
+                    
+                    <VBox spacing="12">
+                        <Label text="Admin Controls" styleClass="panel-title" style="-fx-font-size: 14px;"/>
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Change Status" styleClass="field-label" style="-fx-font-size: 11px;"/>
+                                <ComboBox fx:id="cmbNewStatus" promptText="New Status…" styleClass="field-combo" maxWidth="Infinity"/>
+                            </VBox>
+                            <Button fx:id="btnUpdateStatus" text="Update Status"
+                                    onAction="#handleUpdateStatus" styleClass="btn-accent" prefHeight="40"/>
+                        </HBox>
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Change Priority" styleClass="field-label" style="-fx-font-size: 11px;"/>
+                                <ComboBox fx:id="cmbNewPriority" promptText="New Priority…" styleClass="field-combo" maxWidth="Infinity"/>
+                            </VBox>
+                            <Button fx:id="btnUpdatePriority" text="Assign Priority"
+                                    onAction="#handleUpdatePriority" styleClass="btn-warning" prefHeight="40"/>
+                        </HBox>
+                    </VBox>
+
+                    <Separator/>
+                    
+                    <HBox spacing="12" alignment="CENTER">
+                        <Button text="✔ Resolve Complaint" onAction="#handleQuickResolve" 
+                                style="-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6; -fx-cursor: hand;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                        <Button text="✖ Close Complaint" onAction="#handleQuickClose" 
+                                style="-fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6; -fx-cursor: hand;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </StackPane>
+
+    <!-- ════════════ ANALYSIS POPUP ════════════ -->
+    <StackPane fx:id="analysisPane" visible="false" onMouseClicked="#handleAnalysisOverlayClick" style="-fx-background-color: rgba(0,0,0,0.5);">
+        <padding><Insets top="60" right="100" bottom="60" left="100"/></padding>
+        <VBox styleClass="detail-panel" spacing="0" maxWidth="700" maxHeight="600" 
+              style="-fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 10);">
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f8fafc; -fx-background-radius: 12 12 0 0; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-border-width: 0 0 1 0;">
+                <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+                <Label text="📊 Data Analysis" styleClass="panel-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="✖" onAction="#handleCloseAnalysis" 
+                        style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 18px; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 0 5;"/>
+            </HBox>
+            <HBox spacing="20" VBox.vgrow="ALWAYS" alignment="CENTER">
+                <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                <VBox alignment="CENTER" spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Complaints by Category" styleClass="field-label" style="-fx-font-weight: bold;"/>
+                    <PieChart fx:id="chartCategory" labelsVisible="true" legendSide="BOTTOM"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Complaints by Priority" styleClass="field-label" style="-fx-font-weight: bold;"/>
+                    <PieChart fx:id="chartPriority" labelsVisible="true" legendSide="BOTTOM"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+</StackPane>

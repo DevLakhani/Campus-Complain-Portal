@@ -1,7 +1,5 @@
-target/
 *.class
 .idea/
 *.iml
 .vscode/
-run_output.txt
 .DS_Store
